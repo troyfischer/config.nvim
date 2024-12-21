@@ -49,3 +49,6 @@ map("n", "<M-x>", ":", { noremap = true, silent = false })
 
 -- hot reload current lua file
 map("n", "<leader>hrr", "<cmd>luafile %<cr>", { noremap = true, silent = true })
+
+-- quit everything
+map("n", "<leader>qQ", "<cmd>qa<cr>", { noremap = true, silent = true })
