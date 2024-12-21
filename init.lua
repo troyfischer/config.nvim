@@ -216,12 +216,31 @@ end)
 
 -- neogit
 now(function()
-  add({ source = "NeogitOrg/neogit", depends = { "nvim-lua/plenary.nvim", "sindrets/diffview.nvim" } })
+  add({
+    source = "NeogitOrg/neogit",
+    depends = {
+      "nvim-lua/plenary.nvim",
+      "sindrets/diffview.nvim",
+    },
+  })
   local neogit = require("neogit")
-  neogit.setup({})
-
-  --
+  neogit.setup({
+    process_spinner = false, -- caused by zellij somehow
+  })
   map("n", "<leader>gg", function()
     neogit.open()
   end)
+end)
+
+-- octo.nvim
+now(function()
+  add({
+    source = "pwntester/octo.nvim",
+    depends = { "nvim-lua/plenary.nvim" },
+  })
+  local octo = require("octo")
+
+  octo.setup({
+    picker = "fzf-lua",
+  })
 end)
