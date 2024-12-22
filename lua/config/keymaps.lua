@@ -1,4 +1,5 @@
 vim.g.mapleader = " "
+vim.g.maplocalleader = ","
 vim.opt.clipboard = "unnamedplus"
 vim.opt.number = true
 vim.opt.hlsearch = false
@@ -7,9 +8,6 @@ local map = vim.keymap.set
 
 -- Doom emacs save file
 map("n", "<leader>fs", "<cmd>w<cr><esc>", { desc = "Save file" })
-
-map({ "i", "x", "n", "s", "o", "c" }, "<C-j>", "<C-n>")
-map({ "i", "x", "n", "s", "o", "c" }, "<C-k>", "<C-p>")
 
 -- Ctrl-g to escape
 map({ "i", "x", "n", "s", "o", "c" }, "<C-g>", "<Esc>")
@@ -50,5 +48,7 @@ map("n", "<M-x>", ":", { noremap = true, silent = false })
 -- hot reload current lua file
 map("n", "<leader>hrr", "<cmd>luafile %<cr>", { noremap = true, silent = true })
 
--- quit everything
+-- quit
 map("n", "<leader>qQ", "<cmd>qa<cr>", { noremap = true, silent = true })
+map("n", "<leader>qq", "<cmd>q<cr>", { noremap = true, silent = true })
+map("n", "<leader>qF", "<cmd>qa!<cr>", { noremap = true, silent = true })
