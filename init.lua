@@ -61,12 +61,12 @@ now(function()
   require("mini.tabline").setup()
 end)
 now(function()
-  require("mini.statusline").setup({ use_icons = True })
+  require("mini.statusline").setup({ use_icons = true })
 end)
 
 now(function()
   add({ source = "ibhagwan/fzf-lua", depends = { "nvim-tree/nvim-web-devicons" } })
-  fzf_lua = require("fzf-lua")
+  local fzf_lua = require("fzf-lua")
   map("n", "<leader><leader>", function()
     fzf_lua.files({
       cmd = "fd --type f --hidden --exclude .git --exclude node_modules --exclude .venv",
@@ -83,53 +83,54 @@ now(function()
   end)
 end)
 
-local miniclue = require("mini.clue")
-miniclue.setup({
-  triggers = {
-    -- Leader triggers
-    { mode = "n", keys = "<Leader>" },
-    { mode = "x", keys = "<Leader>" },
+now(function()
+  local miniclue = require("mini.clue")
+  miniclue.setup({
+    triggers = {
+      -- Leader triggers
+      { mode = "n", keys = "<Leader>" },
+      { mode = "x", keys = "<Leader>" },
 
-    -- Built-in completion
-    { mode = "i", keys = "<C-x>" },
+      -- Built-in completion
+      { mode = "i", keys = "<C-x>" },
 
-    -- `g` key
-    { mode = "n", keys = "g" },
-    { mode = "x", keys = "g" },
+      -- `g` key
+      { mode = "n", keys = "g" },
+      { mode = "x", keys = "g" },
 
-    -- Marks
-    { mode = "n", keys = "'" },
-    { mode = "n", keys = "`" },
-    { mode = "x", keys = "'" },
-    { mode = "x", keys = "`" },
+      -- Marks
+      { mode = "n", keys = "'" },
+      { mode = "n", keys = "`" },
+      { mode = "x", keys = "'" },
+      { mode = "x", keys = "`" },
 
-    -- Registers
-    { mode = "n", keys = '"' },
-    { mode = "x", keys = '"' },
-    { mode = "i", keys = "<C-r>" },
-    { mode = "c", keys = "<C-r>" },
+      -- Registers
+      { mode = "n", keys = '"' },
+      { mode = "x", keys = '"' },
+      { mode = "i", keys = "<C-r>" },
+      { mode = "c", keys = "<C-r>" },
 
-    -- Window commands
-    { mode = "n", keys = "<C-w>" },
+      -- Window commands
+      { mode = "n", keys = "<C-w>" },
 
-    -- `z` key
-    { mode = "n", keys = "z" },
-    { mode = "x", keys = "z" },
-  },
+      -- `z` key
+      { mode = "n", keys = "z" },
+      { mode = "x", keys = "z" },
+    },
 
-  clues = {
+    clues = {
 
-    -- Enhance this by adding descriptions for <Leader> mapping groups
-    miniclue.gen_clues.builtin_completion(),
-    miniclue.gen_clues.g(),
-    miniclue.gen_clues.marks(),
-    miniclue.gen_clues.registers(),
-    miniclue.gen_clues.windows(),
-    miniclue.gen_clues.z(),
-  },
-})
+      -- Enhance this by adding descriptions for <Leader> mapping groups
+      miniclue.gen_clues.builtin_completion(),
+      miniclue.gen_clues.g(),
+      miniclue.gen_clues.marks(),
+      miniclue.gen_clues.registers(),
+      miniclue.gen_clues.windows(),
+      miniclue.gen_clues.z(),
+    },
+  })
+end)
 
--- later(function() require('mini.ai').setup() end)
 -- comment
 later(function()
   require("mini.comment").setup()
@@ -154,12 +155,53 @@ end)
 now(function()
   -- Use other plugins with `add()`. It ensures plugin is available in current
   -- session (installs if absent)
+
   add({
     source = "neovim/nvim-lspconfig",
     -- Supply dependencies near target plugin
-    depends = { "williamboman/mason.nvim" },
+    depends = {
+      "williamboman/mason.nvim",
+      "folke/lazydev.nvim",
+      {
+        source = "saghen/blink.cmp",
+        depends = { "rafamadriz/friendly-snippets" },
+        checkout = "v0.8.0", -- required to properly download prebuilt binary
+      },
+    },
   })
+
+  require("blink.cmp").setup({
+    keymap = { preset = "enter" },
+    appearance = {
+      use_nvim_cmp_as_default = true,
+      nerd_font_variant = "mono",
+    },
+    signature = { enabled = true },
+  })
+
   require("mason").setup()
+
+  ---@diagnostic disable-next-line: missing-fields
+  require("lazydev").setup({
+    library = {
+      { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+    },
+  })
+
+  local lspconfig = require("lspconfig")
+
+  local servers = {
+    lua_ls = {},
+    basedpyright = {},
+    ruff = {},
+  }
+
+  for server, config in pairs(servers) do
+    config.capabilities = require("blink.cmp").get_lsp_capabilities(config.capabilities)
+    lspconfig[server].setup(config)
+  end
+
+  map("n", "gd", "<C-]>")
 end)
 
 later(function()
@@ -176,6 +218,7 @@ later(function()
     },
   })
   -- Possible to immediately execute code which depends on the added plugin
+  ---@diagnostic disable-next-line: missing-fields
   require("nvim-treesitter.configs").setup({
     ensure_installed = { "lua", "vimdoc", "python", "go" },
     highlight = { enable = true },
@@ -189,7 +232,7 @@ now(function()
     formatters_by_ft = {
       lua = { "stylua" },
       -- Conform will run multiple formatters sequentially
-      python = { "ruff" },
+      python = { "ruff format", lsp_format = "fallback" },
       -- You can customize some of the format options for the filetype (:help conform.format)
       rust = { "rustfmt", lsp_format = "fallback" },
       -- Conform will run the first available formatter
@@ -216,6 +259,10 @@ end)
 
 -- neogit
 now(function()
+  vim.api.nvim_create_user_command("Emacs", function()
+    vim.cmd("terminal emacsclient -nw")
+  end, {})
+
   add({
     source = "NeogitOrg/neogit",
     depends = {
